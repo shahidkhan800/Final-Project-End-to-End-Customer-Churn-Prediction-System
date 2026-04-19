@@ -1,0 +1,84 @@
+# Import libraries for organizing data and drawing graphs
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Import machine learning tools from Scikit-Learn
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+
+print("All libraries loaded successfully!")
+
+# Load the dataset using the exact path we copied
+df = pd.read_csv('/WA_Fn-UseC_-Telco-Customer-Churn.csv')
+
+# Show the first 5 rows of our data table
+display(df.head())
+
+# Change the 'TotalCharges' column from text to numbers
+# 'coerce' turns any blank spaces into a special "Not a Number" (NaN) value
+df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+
+# Check how many missing values we have
+print("Missing values before cleaning:\n", df.isnull().sum())
+
+# Drop (delete) the rows that have missing values
+df = df.dropna()
+
+print("Missing values after cleaning: ", df.isnull().sum().sum())
+
+# Draw a bar chart showing how many people stayed vs left
+sns.countplot(x='Churn', data=df)
+plt.title("How many customers churned?")
+plt.show()
+
+# 1. Drop the Customer ID column because it doesn't help predict anything
+# We add errors='ignore' so Python doesn't crash if you run this cell twice!
+df = df.drop('customerID', axis=1, errors='ignore')
+
+# 2. Convert text columns to numbers (Label Encoding)
+label_encoder = LabelEncoder()
+for column in df.columns:
+    if df[column].dtype == 'object':
+        df[column] = label_encoder.fit_transform(df[column])
+
+# 3. Separate our "features" (X) from our "target" (y)
+X = df.drop('Churn', axis=1)
+y = df['Churn']
+
+# 4. Scale the numerical features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split the data into training (80%) and testing (20%) sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Create and train Model 1: Logistic Regression
+model_lr = LogisticRegression()
+model_lr.fit(X_train, y_train)
+
+# Create and train Model 2: K-Nearest Neighbors (KNN)
+model_knn = KNeighborsClassifier(n_neighbors=5)
+model_knn.fit(X_train, y_train)
+
+print("Models have finished training!")
+
+# Ask the models to make predictions on the 20% hidden test data
+lr_predictions = model_lr.predict(X_test)
+knn_predictions = model_knn.predict(X_test)
+
+# A helper function to print the report card for our models
+def print_scores(model_name, true_answers, predictions):
+    print(f"--- {model_name} Results ---")
+    print(f"Accuracy:  {accuracy_score(true_answers, predictions):.2f}")
+    print(f"Precision: {precision_score(true_answers, predictions):.2f}")
+    print(f"Recall:    {recall_score(true_answers, predictions):.2f}")
+    print(f"F1-score:  {f1_score(true_answers, predictions):.2f}")
+    print(f"Confusion Matrix:\n{confusion_matrix(true_answers, predictions)}\n")
+
+# Print the final scores
+print_scores("Logistic Regression", y_test, lr_predictions)
+print_scores("K-Nearest Neighbors (KNN)", y_test, knn_predictions)
