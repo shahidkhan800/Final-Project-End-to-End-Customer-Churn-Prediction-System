@@ -23,8 +23,8 @@ After testing the models, here is how they performed on the test data:
 
 | Model | Accuracy | F1-Score |
 | :--- | :--- | :--- |
-| Logistic Regression | 82% | 0.60 |
-| K-Nearest Neighbors | 79% | 0.55 |
+| Logistic Regression | 79% | 0.55 |
+| K-Nearest Neighbors | 74% | 0.51 |
 
 **Conclusion:** The Logistic Regression model performed slightly better at correctly predicting which customers would leave. 
 
